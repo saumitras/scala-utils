@@ -2,7 +2,7 @@ package solr
 
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.impl.client.{HttpClientBuilder, DefaultHttpClient}
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.impl.CloudSolrClient
 import scala.collection.JavaConversions._
@@ -20,35 +20,22 @@ object Delete extends App {
   client.connect()
 
   val cols = client.getZkStateReader.getClusterState.getCollections.toList
+  println("Collections count = " + cols.length)
 
-  //delete all collections
-  if(mode == "ALL") cols.foreach(delete(_))
+  //delete all collect
+  if(mode.toUpperCase == "all")
+    cols.foreach(delete(_))
 
   //delete collections which matches a regex
-  if(mode.toUpperCase == "REGEX") {
-    for(c <- cols) {
-      if(c.matches(s".*$DELETE_ALL_REGEX.*"))
-        delete(c)
-    }
-  }
-
+  if(mode.toUpperCase == "REGEX")
+    cols.filter(_.matches(s".*$DELETE_ALL_REGEX.*")).foreach(delete(_))
 
   //delete all collections with Zero docs
   if(mode.toUpperCase == "ZERO") {
-    for(c <- cols) {
-      println(s"\nChecking $c")
-      val numFound = getNumFound(c)
-      if(numFound == 0) {
-        println(s"Commiting $c")
-        client.commit(c)
-        Thread.sleep(100)
-        if(getNumFound(c) == 0) {
-          delete(c)
-        }
-      }
-    }
+    val zeroCols = cols.filter(getNumFound(_) == 0)
+    zeroCols.foreach(client.commit(_))
+    zeroCols.filter(getNumFound(_) == 0).foreach(delete(_))
   }
-
 
 
   def getNumFound(c:String) = {
@@ -68,7 +55,7 @@ object Delete extends App {
   def delete(c:String) = {
     println(s"Deleting collection $c...")
     val url = s"http://$SOLR_HOST:$SOLR_PORT/solr/admin/collections?action=delete&name=$c"
-    val client = new DefaultHttpClient()
+    val client = HttpClientBuilder.create().build()
     val request: HttpGet = new HttpGet(url)
     val response: HttpResponse = client.execute(request)
     val code = response.getStatusLine().getStatusCode()

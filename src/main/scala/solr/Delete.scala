@@ -23,7 +23,7 @@ object Delete extends App {
   println("Collections count = " + cols.length)
 
   //delete all collect
-  if(mode.toUpperCase == "all")
+  if(mode.toUpperCase == "ALL")
     cols.foreach(delete(_))
 
   //delete collections which matches a regex

@@ -13,8 +13,8 @@ object Delete extends App {
   val SOLR_HOST = "localhost"
   val SOLR_PORT = 8983
 
-  val mode = "zero"  //mode can be zero/all/regex
-  val DELETE_ALL_REGEX = "vce"
+  val mode = "regex"  //mode can be zero/all/regex
+  val DELETE_ALL_REGEX = "collection1"
 
   val client = new CloudSolrClient(zkHost)
   client.connect()

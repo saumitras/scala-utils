@@ -7,7 +7,7 @@ import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.impl.CloudSolrClient
 import scala.collection.JavaConversions._
 
-object Delete extends App {
+object Delete {
 
   val zkHost = "localhost:2181"
   val SOLR_HOST = "localhost"

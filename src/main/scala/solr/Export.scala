@@ -1,24 +1,27 @@
 package solr
 
 import org.apache.solr.client.solrj.SolrQuery
-import org.apache.solr.client.solrj.SolrQuery.SortClause
-import org.apache.solr.client.solrj.impl.HttpSolrClient
+import org.apache.solr.client.solrj.SolrQuery.{ORDER, SortClause}
+import org.apache.solr.client.solrj.impl.{CloudSolrClient, HttpSolrClient}
 import org.apache.solr.client.solrj.response.QueryResponse
 import org.apache.solr.common.params.CursorMarkParams
 
-object Export {
+object Export extends App {
 
-  //exportSolrData()
+  exportSolrData()
 
   def exportSolrData() = {
 
-    val client = new HttpSolrClient("http://localhost:8983/solr/collection/")
+    val client = new CloudSolrClient("localhost:2181")
+    client.setDefaultCollection("e1")
+
     val some_query = "*:*"
-    val r = 100
+    val r = 2
     val q = (new SolrQuery(some_query))
       .setRows(r)
-      .setSort(SortClause.asc("id"))
-      .setFields("id")
+      .addSort("evt_date", ORDER.asc) //.setParam("sort","evt_date desc, namespace_id desc")
+      .addSort("namespace_id", ORDER.asc)
+      .setFields("namespace_id")
     var cursorMark = CursorMarkParams.CURSOR_MARK_START
     var done = false
     while (!done) {
